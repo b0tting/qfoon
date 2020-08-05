@@ -1,0 +1,284 @@
+{% include 'qfoon_header.html' %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <div id="jira_problem" class="alert alert-error hidden">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Warning!</strong> There was a problem fetching from JIRA. Will retry (and remove this error) later.
+        Message: <span id="jira_error">(unknown)</span>
+    </div>
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+
+        <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red" id="Qfors_ebs_label"><i class="fa fa-phone"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">QforS APPS</span>
+              <span class="info-box-number" id="Qfors_ebs"></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+        <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red" id="Qfors_Infra_label"><i class="fa fa-phone"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">QforS Infra</span>
+              <span class="info-box-number" id="Qfors_Infra"></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red" id="Qfors_tech_label"><i class="fa fa-phone"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">QforS TECH</span>
+              <span class="info-box-number" id="Qfors_tech"></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-green"><i class="fa fa-clock-o"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text big-clock" id="clock"></span>
+                <span class="info-box-number" id="curdate"></span>
+            </div>
+
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+     </div>
+     <div class="row">
+
+
+         <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red" id="standby-apps_label"><i class="fa fa-phone"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">QforS APP Standby</span>
+              <span class="info-box-number" id="standby-apps"></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+        <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red" id="standby-schiphol_label"><i class="fa fa-phone"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Schiphol Standby</span>
+              <span class="info-box-number" id="standby-schiphol"></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+        <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red" id="standby-tech_label"><i class="fa fa-phone"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">QforS DBA Standby</span>
+              <span class="info-box-number" id="standby-tech"></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+         <div class="col-md-3 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-green" id="pager_duty_label"><i class="fa fa-paper-plane"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">SMS Dienst</span>
+              <span class="info-box-number" id="pager_duty">(nog niet)</span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+    </div><!-- End of row! -->
+    <div class="row"><!-- End of row! -->
+    <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="box">
+            <!-- Eruit gewipt voor meer ruimte
+                <div class="box-header">
+                    {% if(jira_query) %}
+                        <h3 class="box-title">Showing: {{ jira_query }}</h3>
+                    {% else %}
+                        <h3 class="box-title">Recent unassigned JIRA tickets</h3>
+                    {% endif %}
+                </div>
+                /.box-header -->
+
+
+                <div class="box-body">
+                  <table id="jira_table" class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th class="icon-columns"></th>
+                        <th class="icon-columns"></th>
+                      <th>ID</th>
+                      <th>Description</th>
+                      <th>Datum</th>
+                        <th>Team</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- /.box-body -->
+              </div>
+              <!-- /.box -->
+        </div >
+     </div >
+
+
+      <!-- Your Page Content Here -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+
+    </div>
+    <!-- Default to the left -->
+    <strong>Last update <i class="fa fa-phone" aria-hidden="true"></i> <span id="phonedate"></span> - <i class="fa fa-ticket" aria-hidden="true"></i> <span id="jiradate"> </span>. You are {{  clientip }} - find me at {{ ip }}</strong>
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.0 -->
+<script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+<!-- AdminLTE App -->
+<script src="{{url_for('static', filename='js/app.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/jquery.dataTables.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/qfoon.js')}}"></script>
+<script language="JavaScript">
+    var jiraurl = "{{  jiraurl }}";
+    var ledserver = '{{  ledserverip }}';
+
+          $( document ).ready(function() {
+            startTime("clock");
+            $("#curdate").text(get_my_date())
+            table = $('#jira_table').DataTable({
+                "sAjaxSource": "/jira",
+                "fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {
+                  oSettings.jqXHR = $.ajax( {
+                    "dataType": 'json',
+                    "type": "GET",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(resp, testStatus, jqXHR) {
+                          if(resp.qanbanerror) {
+                                $("#jira_problem").removeClass("hidden");
+                                $("#jira_error").text(resp.message);
+                            } else {
+                              // Remove error if there was one
+                              $("#jira_problem").addClass("hidden");
+                              var got_high = false;
+                              if (resp.data && resp.data.length > 0) {
+                                  for (ticketnum in resp.data) {
+                                      ticket = resp.data[ticketnum];
+                                      got_high = got_high || ticket[1].indexOf("critical") > -1 || ticket[1].indexOf("blocker") > -1;
+                                  }
+
+                                  document.title = "QforS Dash (" + resp.data.length + ")"
+                              } else {
+                                  document.title = "QforS Dash"
+                              }
+                              if (location.protocol != 'https:') {
+                                  $.post("http://" + ledserver + "/power", {value: got_high ? 1 : 0});
+                              }
+                              fnCallback.apply(this, arguments)
+                          }
+                    },
+                      "timeout": 5000
+                  } )},
+                 "aaSorting": [],
+                "paging":   false,
+                "ordering": false,
+                "info":     false,
+                "searching": false,
+                "columnDefs": [
+                        {className: "icon-columns", "targets": [0,1]},
+            {
+
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function ( data, type, row ) {
+                    return '<img src="' + jira_image_url_to_qfoon(row[0], jiraurl) + '" style="width: 32px; height: 32px;">'
+                },
+                "targets":0
+            }, {
+                "render": function ( data, type, row ) {
+                    return '<img src="' + jira_image_url_to_qfoon(row[1], jiraurl) + '" style="width: 32px; height: 32px;">';
+                },
+                "targets":1
+            }, {
+                "render": function (data, type, row) {
+                    return '<a href="https://jira.qualogy.com/browse/' + row[2] + '" class="qstate"  target="_blank">' + row[2] + '</a>';
+                } ,
+                "targets":2
+            }, {
+                "render": function ( data, type, row ) {
+                    val = row[3]
+                    if (row[6]) {
+                        val = '<i class="fa fa-fw fa-tag" style="color: red"></i><b>' + row[3] + '</b>';
+                    }
+
+                    if (row[7]) {
+                        val = " <small style='color: grey'>" + row[7] + "</small>  | " + val
+                    }
+                    return val
+
+                },
+                "targets":3
+            },
+                                    {
+                "targets": [ 6,7 ],
+                "visible": false
+            }
+
+                    ]
+        });
+          refresh_jira();
+          refresh_phones();
+          setInterval(refresh_phones, 600000);
+          setInterval(refresh_jira, 300000);
+      });
+</script>
+
+</body>
+</html>

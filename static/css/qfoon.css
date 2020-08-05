@@ -1,0 +1,105 @@
+        html {
+            height:100%;
+        }
+
+        body {
+            font-size: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-y: auto;
+            height:100%;
+        }
+
+        @media (min-width: 640px) {
+             body {font-size: 240%;}
+        }
+
+        .navbar {
+            background-image: url("../img/stripe.png")
+        }
+
+        .navbar-big {
+            font-size: 140%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: white;
+            font-weight: 800;
+        }
+
+        .transparent {
+            background-image: none;
+            background-color: Transparent;
+            color: white;
+            font-size: 140%;
+        }
+
+        .pad-left {
+            padding-left: 5%;
+        }
+
+        .info-box-text, .info-box-number {
+            font-size: 140%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .push-wrapper {
+            padding:3%;
+        }
+
+        .big-clock {
+            font-size: 220%;
+        }
+
+        .icon-columns {
+            text-align: center;
+            width: 1px;
+        }
+
+        a {
+            color: black;
+        }
+
+        .lb-sm {
+          font-size: 12px;
+        }
+
+         .tooltip > p {
+           text-align:left;
+         }
+
+         .ticket {
+             -webkit-column-break-inside: avoid;
+             page-break-inside: avoid;
+             break-inside: avoid;
+             padding: 5px 10px;
+         }
+
+        .spreaddiv {
+            -webkit-column-count: 2; /* Chrome, Safari, Opera */
+            -moz-column-count: 2; /* Firefox */
+            column-count: 2;
+            -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
+            -moz-column-gap: 40px; /* Firefox */
+            column-gap: 40px;
+            min-height: initial;
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .ticket_green {
+            border-left: 4px solid lawngreen;
+        }
+
+        .ticket_blue {
+            border-left: 4px solid darkblue;
+        }
+
+        .ticket_red {
+            border-left: 4px solid red;
+        }
+
+        .ticket_grey {
+            border-left: 4px solid lightgrey;
+        }

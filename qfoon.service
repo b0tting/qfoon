@@ -1,0 +1,10 @@
+[Unit]
+Description=uWSGI instance voor qfoon
+After=network.target
+
+[Service]
+WorkingDirectory=/usr/local/qfoon
+ExecStart=/bin/uwsgi --ini qfoon_uwsgi.ini
+
+[Install]
+WantedBy=multi-user.target

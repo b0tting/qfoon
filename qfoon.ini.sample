@@ -1,0 +1,75 @@
+[JIRA]
+user : user
+password : pass
+url : https://jira.yoursite.com
+unassignedquery = resolution = Unresolved AND (assignee='Qualogy Support (QforS)' OR (assignee = qbeheer AND updated < -13h AND project != "Arboned Beheer")) ORDER BY created DESC
+openquery = resolution=Unresolved ORDER BY created DESC
+newtime : 180
+statescreensize : 9
+
+[billing]
+user : user
+password : pass
+voipurl : https://
+customerid :
+
+[phonenumbers]
+213: Mark Otting (213)
+
+[phonegroups]
+forwarding=Qfors tech,Qfors ebs,Qfors Infra
+huntgroups=standby-fusion-middleware,standby-apps,standby-tech
+
+[qanban]
+fields=key,summary,status,assignee,project,priority,created,duedate&maxResults=500
+duedate_close : 2
+qanban_resolved_per_week :8
+
+[callintaking]
+## mon, tue, wed, thu, fr
+## Should ALWAYS be 5 values,split with a comma
+early:wdobbenga,wdobbenga,wdobbenga,wdobbenga,wdobbenga
+late:hneervoort,hneervoort,hneervoort,hneervoort,hneervoort
+
+[DEFAULT]
+open_status = Open, New, Reopened, "In Progress"
+unworking_status = Resolved, "On Hold", "Pending Approval", Closed
+hold_status = "On Hold", "Pending Approval"
+daily_check_reporter : "XX QforS daily checks"
+daily_checks : reporter in (%(daily_check_reporter)s) AND updated < -12h
+
+[qanban_infra]
+# Lokale vars in dit config bestand
+members : motting
+team : Infra
+team_assignee : Team DB/Infra
+projects : IHC,NOK,WI,QNL,FVS
+
+query_intake : status in ("New") and assignee in (qfors)
+query_open : assignee in ("%(team_assignee)s") AND ((status in (%(open_status)s) and reporter not in (%(daily_check_reporter)s)) OR (%(daily_checks)s) )
+query_working:  assignee in (%(members)s) AND status not in (%(unworking_status)s)
+## In code wordt deze query aangevuld met begin en einddatums
+query_resolved_base_query: project in (%(projects)s)
+query_onhold:  (assignee in ("%(team_assignee)s") OR assignee in (%(members)s)) AND status in (%(hold_status)s)
+query_illegal: project in (%(projects)s) AND status not in (Open, New, Resolved, Closed) AND assignee not in (%(members)s , "XX QforS daily checks", "XX QforS general support")
+
+[qanban_apps]
+# Lokale vars in dit config bestand
+members : motting
+team = Apps
+team_assignee : Team Apps/MW
+projects : ASB,ANB,CBL,AHCIP,VGZ,EUR,ENAI,QES
+
+query_intake : status in ("New") and assignee in (qfors)
+query_open : assignee in ("%(team_assignee)s") AND ((status in (%(open_status)s) and reporter not in (%(daily_check_reporter)s)) OR (%(daily_checks)s) )
+query_working:  assignee in (%(members)s) AND status not in (%(unworking_status)s)
+## In code wordt deze query aangevuld met begin en einddatums
+query_resolved_base_query: project in (%(projects)s)
+query_onhold:  (assignee in ("%(team_assignee)s") OR assignee in (%(members)s)) AND status in (%(hold_status)s)
+query_illegal: project in (%(projects)s) AND status not in (Open, New, Resolved, Closed) AND assignee not in (%(members)s , "XX QforS daily checks", "XX QforS general support")
+
+[other]
+debug:False
+phonerefreshtime:15
+listenaddr : 0.0.0.0
+listenport : 80

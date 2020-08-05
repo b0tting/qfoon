@@ -1,0 +1,95 @@
+{% include 'qfoon_header.html' %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper push-wrapper" id ="content">
+    <!-- Content Header (Page header) -->
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-6">
+                <label>Schiphol standby nummer</label><br>
+                Het standby nummer staat nu naar <span id="current">(een ogenblik geduld)</span><br>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label>Selecteer persoon</label>
+                <select class="form-control" id="number">
+                    {% for number in numbersdict %}
+                        <option value="{{ number[0] }}">{{ number[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <span id="result"></span><br>
+                <button id="save" disabled>Save!</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <p id="warning"><small>Op de achtergrond browsed deze applicatie door de pagina's van onze telefoonleverancier. Het kan tot een minuut duren voordat die gegevens zichtbaar zijn en je een nieuw telefoonnummer kunt instellen</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Main Footer -->
+<footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs"></div>
+    <!-- Default to the left -->
+    <strong>You are {{ clientip }} - find me at {{ ip }}</strong>
+</footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.0 -->
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<!-- AdminLTE App -->
+<script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script src="/static/js/loadingoverlay.min.js"></script>
+<script>
+    mygroup = "{{ groupname }}"
+    $(document).ready(function () {
+        $.getJSON( "phones", function( data ) {
+            $("#current").text(data[mygroup][0]);
+            $("#save").removeAttr("disabled");
+            $("#warning").hide();
+        })
+
+
+        $(document).ajaxStart(function(){
+            $("#content").LoadingOverlay("show");
+        });
+        $(document).ajaxStop(function(){
+            $("#content").LoadingOverlay("hide");
+        });
+
+        $("#save").click(function () {
+            url = "setphone/" + mygroup + "/" + $("#number").val()
+            $("#result").text("Telefoonnummer wordt gezet!")
+            $.getJSON(url, {}, function (data) {
+                if (data.result == "ok") {
+                    $("#current").text($("#number option:selected").text())
+                    $("#result").text("Telefoonnummer succesvol gezet!")
+                } else {
+                    $("#result").text("Telefoonnummer niet goed gezet, probeer met de hand op de billinginfo website!")
+                }
+            })
+        })
+    });
+
+</script>
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
+</body>
+</html>

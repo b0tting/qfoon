@@ -1,0 +1,28 @@
+<body style="margin:0px;padding:0px;overflow:hidden;">
+    <iframe id="rotaterframe" src="#" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
+    <script language="JavaScript">
+        function rotate() {
+            if(pages[current] == "nagios") {
+                document.getElementById("rotaterframe").src = "http://smarttv.qualogy.com/nagios/cgi-bin/tac.cgi"
+            } else if(pages[current] == "nagiosallseas") {
+                document.getElementById("rotaterframe").src = "http://smarttv.qualogy.com/nagiosallseas/cgi-bin/status.cgi?hostgroup=all&style=overview"
+            } else if(pages[current] != "intake") {
+                document.getElementById("rotaterframe").src = "/qanban/" + pages[current] + querystring;
+            } else {
+                document.getElementById("rotaterframe").src = "/";
+            }
+            current++;
+            if(current >= pages.length) {
+                current = 0
+            }
+        }
+
+        rawpages = "{{ pages }}";
+        time = {{ time }};
+        var pages = rawpages.split(",");
+        var querystring = window.location.search;
+        var current = 0;
+        rotate();
+        setInterval(rotate, 1000 * time);
+    </script>
+</body>

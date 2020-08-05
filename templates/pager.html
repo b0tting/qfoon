@@ -1,0 +1,76 @@
+{% include 'qfoon_header.html' %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper push-wrapper" id ="content">
+    <!-- Content Header (Page header) -->
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-6">
+                <label>Selecteer persoon</label>
+                <select class="form-control" id="number">
+                    {% for number in numbersdict %}
+                        <option value="{{ number[0] }}">{{ number[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <span id="result"></span><br>
+                <button id="save">Save!</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <p><small>Dit is het SMS nummer dat door Nagios gebruikt wordt om alerts te sturen indien buiten kantoortijd prio 1 checks falen</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Main Footer -->
+<footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs"></div>
+    <!-- Default to the left -->
+    <strong>You are {{ clientip }} - find me at {{ ip }}</strong>
+</footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.0 -->
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<!-- AdminLTE App -->
+<script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script src="/static/js/loadingoverlay.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(document).ajaxStart(function(){
+            $("#content").LoadingOverlay("show");
+        });
+        $(document).ajaxStop(function(){
+            $("#content").LoadingOverlay("hide");
+        });
+
+        $("#save").click(function () {
+            url = "pager/set/" + $("#number").val()
+            $("#result").text("Telefoonnummer wordt gezet!")
+            $.getJSON(url, {}, function (data) {
+                $("#result").text("Telefoonnummer succesvol gezet!")
+            })
+        })
+    });
+
+</script>
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
+</body>
+</html>

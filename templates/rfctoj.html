@@ -1,0 +1,79 @@
+{% include 'qfoon_header.html' %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper push-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-6">
+                <label>Geef een JIRA issue nummer (bijvoorbeeld <a href="/rest/jira/word/Request for Change Template JIRA.docx/ASB-7813">ASB-7813</a>)</label>
+                <input type="text" id="rfcnumber">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label>Selecteer een template</label>
+                <select class="form-control" id="templates">
+                    {% for template in templates%}
+                        <option value="{{ template }}">{{ template }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <span id="result"></span><br>
+                <button id="generate">Genereer!</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Main Footer -->
+<footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs"></div>
+    <!-- Default to the left -->
+    <strong>You are {{ clientip }} - find me at {{ ip }}</strong>
+</footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.0 -->
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<!-- AdminLTE App -->
+<script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script>
+    $(document).ready(function () {
+        $("#generate").click(function () {
+            rfcnumber = $("#rfcnumber").val()
+            if(!rfcnumber) {
+                $("#result").text("JIRA RFC / issue nummer is leeg")
+            } else {
+                $("#result").text("Fetching..")
+                $.getJSON("rest/jira/" + rfcnumber, function(data) {
+                        if(data.exists) {
+                            url = "rest/jira/word/" + $("#templates").val() + "/" + rfcnumber
+                             window.open(url, '_blank');
+                        } else {
+                            $("#result").text("JIRA RFC / issue nummer "+rfcnumber+" bestaat niet (of mag ik niet lezen)")
+                        }
+                });
+
+            }
+        })
+    });
+
+</script>
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
+</body>
+</html>

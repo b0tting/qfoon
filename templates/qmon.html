@@ -1,0 +1,144 @@
+{% include 'qfoon_header.html' %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+
+      <!-- Your Page Content Here -->
+<section class="section" id="section" style="padding: 15px;">
+          <!-- Hier worden dus alle resultaten gepropt-->
+</section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- Default to the left -->
+    <strong>Last update <i class="fa fa-eye" aria-hidden="true"></i> <span id="mondate"></span>. You are {{  clientip }} - find me at {{ ip }}</strong>
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.0 -->
+<script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+<!-- AdminLTE App -->
+<script src="{{url_for('static', filename='js/app.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/jquery.dataTables.min.js')}}"></script>
+<!--
+              <div class="col-md-4 col-sm-6 col-xs-12">
+        <div class="info-box bg-orange">
+            <span class="info-box-icon"><i class="fa fa-bookmark-o"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">EUR</span>
+              <span class="info-box-number">4 WARNINGS</span>
+
+            </div>
+          </div>
+    </div>
+            -->
+<script>
+    var table = ""
+      function get_my_time() {
+          date = new Date()
+          return date.getHours() + ":" + ( (date.getMinutes()<10?'0':'') + date.getMinutes() )
+      }
+
+
+    function get_html_fragment(client) {
+        // Set text
+        var text = ""
+        if(client.errors > 0) {
+            text = client.errors + (client.errors > 1 ? " errors" : " error")
+            if(client.warnings > 0 ) {
+                text = text +  "<br>"
+            }
+        }
+        if(client.warnings > 0 ) {
+                text = text + client.warnings + (client.warnings > 1 ? " warnings" : " warning")
+        }
+
+        text =  client.state == "STALE" ? "STALE" : text == "" ? "OK" : text
+
+        if(client.fresh) {
+            text = '<i class="fa fa-fw fa-tag" style="color: red"></i>' + text
+        }
+
+        // Set color
+        curclass = "bg-green"
+        if(client.state == "ERROR") {
+            curclass = "bg-red"
+        } else if(client.state == "WARNING") {
+            curclass = "bg-orange"
+        } else if(client.state == "STALE") {
+            curclass = "bg-grey"
+        }
+
+        var le_div =  $('<div/>')
+        .addClass("col-md-4")
+        .append(
+            $('<div/>')
+            .addClass("info-box ")
+            .append(
+                    $('<span/>')
+                    .addClass("info-box-icon")
+                    .addClass(curclass)
+                    .html('<i class="fa fa-bookmark-o"></i>')
+            )
+           .append(
+                $('<div/>')
+                .addClass("info-box-content")
+                .append(
+                        $('<span/>')
+                        .addClass("info-box-text")
+                        .text(client.client)
+                ).append(
+                        $('<span/>')
+                        .addClass("info-box-number")
+                        .html(text)
+                )
+
+            )
+        )
+
+        return le_div
+    }
+
+    function refresh_monitor() {
+           $.getJSON( "mon", function( data ) {
+               try {
+                   $("section").empty()
+                   var i = 0;
+                   data.reports.forEach(function (client) {
+                       if((i%3) == 0) {
+                            $("section").append("<div class='row'>")
+                       }
+                       $("section").append(get_html_fragment(client))
+                       if((i%3) == 0) {
+                            $("section").append("</div>")
+                       }
+                       i++
+                   })
+               } catch (err) {
+                   $("section").append('<div class="alert alert-danger alert-dismissible">Error in retreiving results!</div>')
+               }
+           })
+          $("#mondate").text(get_my_time())
+    }
+
+      $( document ).ready(function() {
+        refresh_monitor()
+        setInterval(refresh_monitor, 300000)
+      });
+</script>
+
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
+</body>
+</html>

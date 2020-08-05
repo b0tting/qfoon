@@ -1,0 +1,408 @@
+{% include 'qfoon_header.html' %}
+<div class="content-wrapper" style="min-height: 752px;" id="content">
+    <!-- Content Header (Page header) -->
+    <div id="jira_problem" class="alert alert-error hidden">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Warning!</strong> There was a problem fetching from JIRA. Will retry (and remove this error) later.
+        Message: <span id="jira_error">(unknown)</span>
+    </div>
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="box">
+                    <div class="box-header with-border" id="tooltip_intake">
+                      <h3 class="box-title">INTAKE</h3><span class="label pull-right label-default" id="intake_count"></span>
+                    </div>
+
+                    <div class="box-header with-border" id="tooltip_q">
+                      <h3 class="box-title">Q</h3><a href="{{ q_url }}" target="_blank"><span class="label pull-right label-default" id="q_count"></span></a>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                      <ul id="q" class="list-group"></ul>
+                    </div>
+                <!-- ./box-body -->
+              </div>
+            </div>
+            <div class="col-md-6">
+                <div class="box">
+                    <div class="box-header with-border" id="tooltip_working">
+                      <h3 class="box-title">WORKING</h3><span class="label pull-right label-default" id="working_count"></span>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body spreaddiv">
+                      <ul id="working" class="list-group"></ul>
+                    </div>
+                <!-- ./box-body -->
+              </div>
+            </div>
+            <div class="col-md-3">
+                <div class="box">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-green"><i class="fa fa-clock-o"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text big-clock" id="clock"></span>
+                            <span class="info-box-number" id="curdate"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box">
+                    <div class="box-header with-border" id="tooltip_onhold">
+                        <h3 class="box-title">ON HOLD </h3>
+                        <span class="label pull-right label-default" id="on_hold_count"></span>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                      <ul id="on_hold" class="list-group"></ul>
+                    </div>
+                <!-- ./box-body -->
+                </div>
+            </div>
+        </div>
+</section>
+    <!-- /.content -->
+</div>
+
+<div class="modal fade" id="operator_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <ul id="all_operators" class="list-group">
+
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+      <div class="row">
+          <div class="col-md-6">
+              <strong>Last update <i class="fa fa-eye" aria-hidden="true"></i> <span id="lastupdate"></span>. You are {{  clientip }} - find me at {{ ip }}</strong>
+          </div>
+      </div>
+  </footer>
+</div>
+
+
+
+
+<!-- jQuery 2.2.0 -->
+<script src="/static/js/jquery.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/loadingoverlay.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/js/app.js"></script>
+<script src="/static/js/jquery.dataTables.min.js"></script>
+<script src="/static/js/jquery.sparkline.min.js"></script>
+<script src="/static/js/qfoon.js"></script>
+<script>
+    team = "{{ team }}";
+    jiraurl = "{{  jiraurl }}";
+
+    // Max amount of tickets to display as Q
+    max_count = 12;
+
+    // How many tickets an administrator can have before it is considered too much (2 is a Kanban default, -1 means never show in red)
+    max_working = -1;
+
+    // How many tickets to show in the work lane
+    max_working_show = 2;
+
+    // How many tickets displayed from the on-hold queue?
+    max_onhold = 6;
+
+    // Max letters to display per issue on screen
+    summary_line_length = get_request_param("desclength") ? get_request_param("desclength") : 70;
+
+    // The time in which tickets are considered recent and will recieve special flair
+    recent_time = 3 * 60 * 60000;
+
+    // When is a ticket in the on_hold q urgent enough to display?
+    duedate_urgent = 2;
+
+    // Refresh time for the board in seconds
+    refresh = 300;
+
+    // estimated time icons, in seconds for minor and medium times. Everythong above that is "major"
+    estimate_minor = 7200;
+    estimate_medium = 28800;
+
+    // Prio welke niet af te drukken
+    ignoreable_prio = 4
+
+
+    if(get_request_param("scrolling") == "hide") {
+        document.body.style.overflow = 'hidden';
+    }
+
+    function list_total_button(buttonid, issuelist, query) {
+        buttonfield = $("#" + buttonid);
+
+        jql = query;
+        len = issuelist;
+        if (issuelist instanceof Array) {
+            if (query) {
+                jql = query
+            } else {
+                jql = "key in ("
+                for (i = 0; i < issuelist.length; i++) {
+                    issue = issuelist[i]
+                    jql += '"' + issue.key + '"'
+                    if (i + 1 < issuelist.length) {
+                        jql += ", "
+                    }
+                }
+                jql += ")";
+            }
+            len = issuelist.length
+        }
+        buttonfield.html("<a href='"+jiraurl + "/issues/?jql="+jql+"'  target='_blank'>" + len + "</a>")
+    }
+
+    function get_label_for_issue_type(issuetypeText) {
+        if(issuetypeText.toLowerCase().indexOf("parent") !== -1) {
+            return "ticket_grey"
+        } else if(issuetypeText.toLowerCase().indexOf("change") !== -1) {
+            return "ticket_blue"
+        } else if(issuetypeText.toLowerCase().indexOf("incident") !== -1) {
+            return "ticket_red"
+        } else if(issuetypeText.toLowerCase().indexOf("maintenance") !== -1) {
+            return "ticket_green"
+        } else {
+            return "ticket_grey";
+        }
+
+    }
+
+    function format_key(issue, face) {
+        face = typeof face !== 'undefined' ? face : false;
+
+        issuehtml = "<li class='list-group-item ticket ";
+
+        // ISSUE TYPE
+        issuehtml += get_label_for_issue_type(issue.fields.issuetype.name);
+
+        issuehtml += "'>"
+
+        // ASSIGNEE IF NEEDED
+        if(face && issue.fields.assignee) {
+            issuehtml += "<img src='" + jira_image_url_to_qfoon(issue.fields.assignee.avatarUrls["24x24"], jiraurl) + "' width='24px' class='img-circle' title='"+ issue.fields.assignee.displayName+"'/>&nbsp;"
+        }
+
+        // PROJECT ICON
+        icon = jira_image_url_to_qfoon(issue.fields.project.avatarUrls["24x24"], jiraurl);
+        issuehtml += "<img src='"+icon+"' width='24px' title='"+ issue.fields.project.name+"'> "; // Note: extra space
+
+        // PRIORITY ICON
+        if(issue.fields.priority && issue.fields.priority.id != ignoreable_prio) {
+            icon = jira_image_url_to_qfoon(issue.fields.priority.iconUrl, jiraurl);
+            issuehtml += "<img src='" + icon + "' width='24px' title='" + issue.fields.priority.name + "'> "; // Note: extra space
+        }
+
+        // ESTIMATED ICON
+        if(issue.fields.timetracking && issue.fields.timetracking.remainingEstimateSeconds) {
+            remaining = issue.fields.timetracking.remainingEstimateSeconds
+            if(remaining <= estimate_minor) {
+                icon = "/static/images/clock_green.png"
+            } else if(remaining <= estimate_medium) {
+                icon = "/static/images/clock_orange.png"
+            } else {
+                icon = "/static/images/clock_red.png"
+            }
+            issuehtml += "<img src='"+icon+"' title='Estimated time left: "+issue.fields.timetracking.remainingEstimate+"'> "; // Note: extra space
+        }
+
+        // ADD TAG IF RECENT ENTRY
+        // "created": "2016-12-16T15:47:00.000+0100",
+        createddate = Date.parse(issue.fields.created);
+        recent = (Date.now() - createddate) < recent_time;
+        if(recent){
+            issuehtml += "<i class='fa fa-fw fa-tag' style='color: red'></i> "
+        }
+
+        // ADD PARENT TICKET IF APPLICABLE
+        if(issue.fields.parent && issue.fields.parent.key) {
+            issuehtml += "<small style='color: grey'>" + issue.fields.parent.key + "</small> "
+        }
+
+        // ISSUE NUNBER AND JIRA LINK
+        key = issue.key
+        issuehtml += "<a href='"+jiraurl+"/browse/" + key + "' target='_blank'>"+key+"</a>";
+
+
+        // DUE DATE PARSER
+        if(issue.fields.duedate) {
+            duedate = new Date(issue.fields.duedate);
+            duestring = new Date(duedate).toLocaleDateString('nl-NL', {
+                    day: 'numeric',
+                    month: 'short',
+                    year : 'numeric'
+                }
+            )
+
+            now = new Date()
+            if (duedate.toDateString() == now.toDateString()) {
+                issuehtml += "<span class='label label-success lb-sm pull-right'>" + duestring + "</span>"
+            // Date hack omdat javascript datums vergelijken niet kan met === of ==
+            } else if (duedate < now)  {
+                issuehtml += "<span class='label label-danger lb-sm pull-right'>" + duestring + "</span>"
+            } else {
+                issuehtml += "<span class='label label-default lb-sm pull-right'>" + duestring + "</span>"
+            }
+        } else {
+            issuehtml += "<span class='label label-danger lb-sm pull-right'>NO DUE DATE!</span>"
+        }
+
+        issuehtml += "<br>"
+
+        summary = issue.fields.summary.substr(0,summary_line_length);
+        if (issue.fields.summary.length > summary_line_length) {
+            summary += "..."
+        }
+        issuehtml += "<small>"+summary +"</small>";
+        issuehtml += "</i>";
+
+        return issuehtml
+    }
+
+
+    // Do a fetch of the screen state, expecting a big JSON tree of the swimming lanes
+    function fetch_jira_state() {
+        $.ajax({
+            dataType: "json",
+            url: "/rest/qanban/" + team,
+            timeout: 8000,
+            success: function (data) {
+                if(data.qanbanerror) {
+                    $("#jira_problem").removeClass("hidden");
+                    $("#jira_error").text(data.message);
+                } else {
+                    // Remove error if there was one
+                    $("#jira_problem").addClass("hidden");
+
+                    q = data["unassigned"];
+                    q_ul = $("#q");
+                    q_ul.empty();
+
+                    i = 0
+                    for (issue in q) {
+                        q_ul.append(format_key(q[issue]));
+                        if (i > max_count) {
+                            break
+                        }
+                    }
+                    list_total_button("q_count", q, data["unassigned_query"]);
+                    $("#tooltip_q").tooltip({
+                        html: true,
+                        placement: "bottom",
+                        title: "<p>Tickets in de Q zijn nieuw binnengekomen, of zijn teruggezet door behandelaars om door een collega opgepakt te worden. Sortering is op basis van 'due date'.<br><i>" + data["unassigned_query"] + "</i></p>"
+                    })
+
+                    working = data["working"];
+                    working_ul = $("#working");
+                    working_ul.empty();
+                    working_list = [];
+                    for (assignee in working) {
+                        le_div = $('<div style="page-break-inside: avoid; break-inside: avoid; -webkit-column-break-inside: avoid;"/>');
+                        currentAssignee = working[assignee];
+                        imgurl = currentAssignee[0].fields.assignee.avatarUrls["48x48"];
+                        imgurl = jira_image_url_to_qfoon(imgurl, jiraurl);
+                        displayname = currentAssignee[0].fields.assignee.displayName;
+                        fixed_stupid_assignee_name = assignee.replace(/\W/g, '');
+                        badge = '<span class="label ' + ((max_working > -1 && currentAssignee.length > max_working) ? 'label-danger' : 'label-default') + ' pull-right" id="' + fixed_stupid_assignee_name + '_count"></span>';
+                        le_div.append("<li style='list-style-type: none;'><img src='" + imgurl + "'  width='24px' class='img-circle'>" + displayname + badge + "</li>");
+                        for (i = 0; i < currentAssignee.length && i < max_working_show; i++) {
+                            issue = currentAssignee[i];
+                            le_div.append(format_key(issue))
+                        }
+                        le_div.append("<li style='list-style-type: none;'>&nbsp;</li>");
+                        working_ul.append(le_div);
+                        list_total_button(fixed_stupid_assignee_name + '_count', currentAssignee);
+                        working_list = working_list.concat(currentAssignee)
+                    }
+                    list_total_button("working_count", working_list, data["working_query"]);
+                    $("#tooltip_working").tooltip({
+                        html: true,
+                        placement: "bottom",
+                        title: "<p>Behandelaars mogen niet met meer dan 2 tickets tegelijk bezig zijn!<br><i>" + data["working_query"] + "</i></p>"
+                    });
+
+                    hold = data["on_hold"];
+                    hold_ul = $("#on_hold");
+                    hold_ul.empty();
+                    i = 0;
+                    urgentdate = Date.now() - (duedate_urgent * 24 * 60 * 60 * 1000);
+                    for (issue in hold) {
+                        currentissue = hold[issue];
+                        hold_ul.append(format_key(currentissue, true));
+                        if (++i >= max_onhold) {
+                            break;
+                        }
+                    }
+                    list_total_button("on_hold_count", hold, data["on_hold_query"]);
+
+
+                    $("#tooltip_onhold").tooltip({
+                        html: true,
+                        placement: "bottom",
+                        title: "<p>Alle tickets die tijdelijk zijn stopgezet, of wachten op goedkeuring door derden<br><i>" + data["on_hold_query"] + "</i></p>"
+                    })
+
+
+                    list_total_button("resolved_this_week_count", data["resolved_this_week_total"], data["resolved_this_week_query"]);
+                    $("#tooltip_resolved").tooltip({
+                        html: true,
+                        placement: "bottom",
+                        title: "<p>Alle tickets die door behandelaars zijn opgelost en wachten op goedkeuring door derden, gesplitst in afgemeld deze week en afgemeld totaal.<br><i>" + data["resolved_query"] + "</i></p>"
+                    })
+
+                    list_total_button("intake_count", data["intake_total"], data["intake_query"]);
+                    $("#tooltip_intake").tooltip({
+                        html: true,
+                        placement: "bottom",
+                        title: "<p>Tickets die door de call intaker in behandeling genomen moeten worden<br><i>" + data["intake_query"] + "</i></p>"
+                    });
+                    $("#lastupdate").text(get_my_time());
+                }
+         },
+            error: function () {
+                $("#jira_problem").removeClass("hidden");
+                $("#jira_error").text("Generic server error");
+            }
+        })
+    }
+
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        startTime("clock");
+        $("#curdate").text(get_my_date())
+
+        $(document).ajaxStart(function(){
+            $("#content").LoadingOverlay("show");
+        });
+        $(document).ajaxError(function(){
+            $("#content").LoadingOverlay("hide");
+        });
+
+        $(document).ajaxStop(function(){
+            $("#content").LoadingOverlay("hide");
+        });
+
+        // Deze functie zou ik moeten splitsen, het is nu een klassieke spaghettibal geworden
+        fetch_jira_state();
+        setInterval(fetch_jira_state, refresh * 1000);
+    });
+</script>
+
+
+</body></html>

@@ -1,0 +1,11 @@
+flask
+certifi
+requests
+messagebird
+pytz
+docxtpl
+uwsgi
+py-dateutil
+netifaces
+mechanize
+netifaces

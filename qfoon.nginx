@@ -1,0 +1,6 @@
+        location / { try_files $uri @qfoon; }
+        location @qfoon {
+            include uwsgi_params;
+            uwsgi_pass unix:/usr/local/qfoon/qfoon.sock;
+        }
+
